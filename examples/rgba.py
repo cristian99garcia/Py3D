@@ -33,8 +33,9 @@ class Window(Gtk.Window):
         self.scales = {}
 
         for value in ["red", "green", "blue", "alpha"]:
-            adj = Gtk.Adjustment(1, 0, 1, 0.2, 0.4)
-            scale = Gtk.Scale()
+            adj = Gtk.Adjustment(1.0, 0.0, 1.0, 0.01, 0.01)
+            scale = Gtk.HScale()
+            scale.set_digits(3)
             scale.set_adjustment(adj)
             scale.set_tooltip_text(value)
             scale.connect("value-changed", self._value_change_cb)
