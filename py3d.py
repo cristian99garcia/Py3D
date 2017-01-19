@@ -1014,7 +1014,7 @@ class ShapeUtils:
         quads = []
 
         theta_step = math.pi / (tess_y + 1)
-        phi_step = (k2PI) / tess_x
+        phi_step = (ShapeUtils.k2PI) / tess_x
 
         theta = theta_step
         for i in range(0, tess_y):
@@ -1092,7 +1092,7 @@ class ShapeUtils:
                 z=r * math.sin(theta) * math.cos(phi)
             )
 
-        return make_spherical_shape(make_point, tess_x, tess_y)
+        return ShapeUtils.make_spherical_shape(make_point, tess_x, tess_y)
 
     @classmethod
     def average_smooth(self, shape, m):
