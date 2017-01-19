@@ -287,10 +287,9 @@ class Renderer:
         return Point2D(x=p.x * v * scale + self.xoff, y=p.y * v * -scale + scale)
 
     def project_points_to_canvas(self, ps):
-        il = len(ps)
-        out = [None] * il  ## FIXME: Is really necessary?
-        for i in range(0, il):
-            out[i] = self.project_point_to_canvas(ps[i])
+        out = []
+        for p in ps:
+            out.append(self.project_point_to_canvas(p))
 
         return out
 
@@ -313,11 +312,10 @@ class Renderer:
         world_vertices = Py3D.transform_points(t, shape.vertices)
         quads = shape.quads
 
-        jl = len(shape.quads)
-        for j in range(0, jl):  ## FIXME: ++j
+        for j in range(0, len(shape.quads)):
             qf = quads[j]
 
-            if quad_callback is not None and quad_callback(qf, j, shape) == True:
+            if quad_callback is not None and quad_callback(qf, j, shape):
                 continue
 
             centroid = Py3D.transform_point(t, qf.centroid)
@@ -328,7 +326,7 @@ class Renderer:
             n1 = Py3D.unit_vector_3d(Py3D.transform_point(tn, qf.normal1))
             n2 = Py3D.transform_point(tn, qf.normal2)
 
-            if draw_backfaces != True and Py3D.dot_product_3d(centroid, n1) > 0 and Py3D.dot_product_3d(centroid, n2) > 0:
+            if not draw_backfaces and Py3D.dot_product_3d(centroid, n1) > 0 and Py3D.dot_product_3d(centroid, n2) > 0:
                 continue
 
             intensity = Py3D.dot_product_3d(Py3D.g_z_axis_vector, n1)
@@ -337,7 +335,7 @@ class Renderer:
 
             world_qf = None
 
-            if qf.is_triangle() == True:
+            if qf.is_triangle():
                 world_qf = QuadFace(
                     world_vertices[qf.i0],
                     world_vertices[qf.i1],
@@ -383,21 +381,20 @@ class Renderer:
         all_quads = self.buffered_quads
         num_quads = len(all_quads)
 
-        if self.perform_z_sorting == True:
+        if self.perform_z_sorting:
             all_quads.sort(Py3D.z_sorter)
 
-        for j in range(0, num_quads):  ## FIXME: ++j
-            obj = all_quads[j]
+        for obj in all_quads:
             qf = obj["qf"]
 
             self.project_quad_face_to_canvas_ip(qf)
 
             is_triangle = qf.is_triangle()
 
-            if obj["draw_overdraw"] == True:
+            if obj["draw_overdraw"]:
                 Py3D.push_points_2s_ip(qf.i0, qf.i1)
                 Py3D.push_points_2s_ip(qf.i1, qf.i2)
-                if is_triangle == True:
+                if is_triangle:
                     Py3D.push_points_2s_ip(qf.i2, qf.i0)
 
                 else:
@@ -467,12 +464,8 @@ class Renderer:
         context.new_path()
         context.move_to(start_point.x, start_point.y)
 
-        curves = path.curves
-        jl = len(curves)
-        for j in range(0, jl):  ## FIXME: ++j
-            curve = curves[j]
-
-            if curve.is_quadratic() == True:
+        for curve in path.curves:
+            if curve.is_quadratic():
                 c0 = screen_points[curve.c0]
                 ep = screen_points[curve.ep]
                 context.curve_to(start_point.x, start_point.y, c0.x, c0.y, ep.x, ep.y)
@@ -483,7 +476,7 @@ class Renderer:
                 ep = screen_points[curve.ep]
                 context.curve_to(start_point.x, start_point.y, c0.x, c0.y, ep.x, ep.y)
 
-        if opts.fill == True:
+        if opts.fill:
             context.fill()
         
         else:
@@ -710,24 +703,21 @@ class Py3D:
 
     @classmethod
     def transform_points(self, t, ps):
-        il = len(ps)
-        out = [None] * il  ## FIXME: Is really necessary?
-        for i in range(0, il):
-            out[i] = Py3D.transform_point(t, ps[i])
+        out = []
+        for p in ps:
+            out.append(Py3D.transform_point(t, p))
 
         return out
 
     @classmethod
     def average_points(self, ps):
         avg = Point3D(x=0, y=0, z=0)
-        il = len(ps)
-        for i in range(0, il):
-            p = ps[i]
+        for p in ps:
             avg.x += p.x
             avg.y += p.y
             avg.z += p.z
 
-        f = 1 / il
+        f = 1 / len(ps)
 
         avg.x *= f
         avg.y *= f
@@ -816,12 +806,9 @@ class ShapeUtils:
     @classmethod
     def rebuild_meta(self, shape):
         quads = shape.quads
-        num_quads = len(quads)
         vertices = shape.vertices
 
-        for i in range(0, num_quads):  ## FIXME: ++i
-            qf = quads[i]
-
+        for qf in quads:
             centroid = None
             n1 = n2 = None
 
@@ -850,36 +837,29 @@ class ShapeUtils:
 
     @classmethod
     def triangulate(self, shape):
-        quads = shape.quads
-        num_quads = len(quads)
-        for i in range(0, num_quads):  ## FIXME:
-            qf = quads[i]
+        for qf in shape.quads:
             if qf.is_triangle():
                 continue
 
             newtri = QuadFace(qf.i0, qf.i2, qf.i3, None)
             qf.i3 = None
-            quads.append(newtri)
+            shape.quads.append(newtri)
 
         ShapeUtils.rebuild_meta(shape)
         return shape
 
     @classmethod
     def for_each_face(self, shape, func):
-        quads = shape.quads
-        il = len(quads)
-        for i in range(0, il):  ## FIXME: ++i
-            if func(quads[i], i, shape) == True:
+        for i in range(0, len(shape.quads)):
+            if func(shape.quads[i], i, shape):
                 break
 
         return shape
 
     @classmethod
     def for_each_vertex(self, shape, func):
-        vertices = shape.vertices
-        il = len(vertices)
-        for i in range(0, il):  ## FIXME: +i
-            if func(vertices[i], i, shape) == True:
+        for i in range(0, len(shape.vertices)):
+            if func(shape.vertices[i], i, shape):
                 break
 
         return shape
@@ -1037,15 +1017,15 @@ class ShapeUtils:
         phi_step = (k2PI) / tess_x
 
         theta = theta_step
-        for i in range(0, tess_y):  ## FIXME: ++i
-            for j in range(0, tess_x):  # FIXME: ++j
+        for i in range(0, tess_y):
+            for j in range(0, tess_x):
                 vertices.append(f(theta, phi_step * j))
 
             theta += theta_step
 
-        for i in range(0, tess_y - 1):  ## FIXME: ++i
+        for i in range(0, tess_y - 1):
             stride = i * tess_x
-            for j in range(0, tess_x):  ## FIXME: ++j
+            for j in range(0, tess_x):
                 n = (j + 1) % tess_x
                 quads.append(QuadFace(
                     stride + j,
@@ -1060,7 +1040,7 @@ class ShapeUtils:
         vertices.append(f(0, 0))
         vertices.append(f(math.pi, 0))
 
-        for i in range(0, tess_x):  ## FIXME: ++i
+        for i in range(0, tess_x):
             quads.append(QuadFace(
                 top_p_i,
                 i,
@@ -1094,7 +1074,7 @@ class ShapeUtils:
         ]
 
         quads = []
-        for i in range(0, 4):  ## FIXME: ++i
+        for i in range(0, 4):
             i2 = (i + 1) & 3
             quads[i * 2]     = QuadFace(4, i, i2, None)
             quads[i * 2 + 1] = QuadFace(i, 5, i2, None)
@@ -1121,14 +1101,13 @@ class ShapeUtils:
 
         vertices = shape.vertices
         psl = len(vertices)
-        new_ps = [None] * psl  ## FIXME: Is really necessary?
+        new_ps = [None] * psl
 
-        connections = [None] * psl  ## FIXME: Is really necessary?
-        for i in range(0, psl):  ## FIXME: ++i
+        connections = [None] * psl
+        for i in range(0, psl):
             connections[i] = []
 
-        il = len(shape.quads)
-        for i in range(0, il):  ## FIXME: ++i
+        for i in range(0, len(shape.quads)):
             qf = shape.quads[i]
             connections[qf.i0].append(i)
             connections[qf.i1].append(i)
@@ -1136,13 +1115,11 @@ class ShapeUtils:
             if not qf.is_triangle():
                 connections[qf.i3].append(i)
 
-        il = len(vertices)
-        for i in range(0, il):  ## FIXME: ++i
+        for i in range(0, len(vertices)):
             cs = connections[i]
             avg = Point3D(x=0, y=0, z=0)
 
-            jl = len(cs)
-            for j in range(0, jl):  ## FIXME: ++j
+            for j in range(0, len(cs)):
                 quad = shape.quads[cs[j]]
                 p1 = vertices[quad.i0]
                 p2 = vertices[quad.i1]
@@ -1152,7 +1129,7 @@ class ShapeUtils:
                 avg.y += (p1.y + p2.y + p3.y + p4.y) / 4
                 avg.z += (p1.z + p2.z + p3.z + p4.z) / 4
 
-            f = 1 / jl
+            f = 1 / len(cs)
             avg.x *= f
             avg.y *= f
             avg.z *= f
@@ -1165,22 +1142,17 @@ class ShapeUtils:
 
     @classmethod
     def array_map(self, arr, func):
-        out = [None] * len(arr)  ## FIXME: Is really necessary?
-        il = len(arr)
-        for i in range(0, il):  ## FIXME: ++i
+        out = [None] * len(arr)
+        for i in range(0, len(arr)):
             out[i] = func(arr[i], i, arr)
 
         return out
 
     @classmethod
     def linear_subdivide(self, shape):
-        num_quads = len(length)
-
         share_points = { }
 
-        for i in range(0, num_quads):  ## FIXME: ++i
-            quad = shape.quads[i]
-
+        for quad in shape.quads:
             i0 = quad.i0
             i1 = quad.i1
             i2 = quad.i2
@@ -1203,8 +1175,7 @@ class ShapeUtils:
                 [i0, i1, i2, i3].sort()
             ]
 
-            jl = len(ni)
-            for j in range(0, jl):  ## FIXME: ++j
+            for j in range(0, len(ni)):
                 ps = ni[j]
                 key = ps.join("-")
                 centroid_index = share_points[key]
@@ -1234,7 +1205,7 @@ class ShapeUtils:
         num_tris = len(shape.quads)
         share_points = { }
 
-        for i in range(0, num_tris):  ## FIXME: ++i
+        for i in range(0, num_tris):
             tri = shape.quads[i]
 
             i0 = tri.i0
@@ -1255,8 +1226,7 @@ class ShapeUtils:
                 [i2, i0].sort(),
             ]
 
-            jl = len(ni)
-            for j in range(0, jl):  ## FIXME: ++j
+            for j in range(0, len(ni)):
                 ps = ni[j]
                 key = ps.join("-")
                 centroid_index = share_points[key]
@@ -1287,8 +1257,7 @@ class ShapeUtils:
         num_quads = len(quads)
         verts = shape.vertices
         new_verts = []
-        for i in range(0, num_quads):  ## FIXME: ++i
-            q = quads[i]
+        for q in quads:
             pos = len(new_verts)
             new_verts.append(Point3D(x=verts[q.i0].x, y=verts[q.i0].y, z=verts[q.i0].z))
             new_verts.append(Point3D(x=verts[q.i1].x, y=verts[q.i1].y, z=verts[q.i1].z))
@@ -1296,7 +1265,7 @@ class ShapeUtils:
             q.i0 = pos
             q.i1 = pos + 1
             q.i2 = pos + 2
-            if q.is_triangle() != True:
+            if not q.is_triangle():
                 new_verts.append(Point3D(x=verts[q.i3].x, y=verts[q.i3].y, z=verts[q.i3].z))
                 q.i3 = pos + 3
 
@@ -1345,13 +1314,11 @@ class Extruder:
         quads = shape.quads
 
         faces = []
-        il = len(quads)
-        for i in range(0, il):  ## FIXME: ++i
+        for i in range(0, len(quads)):
             if self.selector(shape, i):
                 faces.append(i)
 
-        il = len(faces)
-        for i in range(0, il):  ## FIXME: ++i
+        for i in range(0, len(faces)):
             face_index = faces[i]
             qf = quads[face_index]
             original_cent = qf.centroid
@@ -1360,10 +1327,10 @@ class Extruder:
             inner_normal0 = Py3D.sub_points_3d(vertices[qf.i0], original_cent)
             inner_normal1 = Py3D.sub_points_3d(vertices[qf.i1], original_cent)
             inner_normal2 = Py3D.sub_points_3d(vertices[qf.i2], original_cent)
-            if is_triangle != True:
+            if not is_triangle:
                 inner_normal3 = Py3D.sub_points_3d(vertices[qf.i3], original_cent)
 
-            for z in range(0, count):  ## FIXME: ++z
+            for z in range(0, count):
                 m = (z + 1) / count
 
                 t = Transform()
@@ -1419,7 +1386,7 @@ class Extruder:
                 qf.i0 = index_before
                 qf.i1 = index_before + 1
                 qf.i2 = index_before + 2
-                if is_triangle != True:
+                if not is_triangle:
                     qf.i3 = index_before + 3
 
         ShapeUtils.rebuild_meta(shape)

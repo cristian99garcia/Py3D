@@ -65,7 +65,7 @@ class Utils:
 
         z = 0
         p = 0
-        for i in range(0, count):  ## FIXME: ++i
+        for i in range(0, count):
             points.append(Point3D(x=0, y=kKappa,  z=z))
             z -= 0.05
             points.append(Point3D(x=1, y=kKappa,  z=z))
