@@ -19,7 +19,7 @@ class Window(Gtk.Window):
         Gtk.Window.__init__(self)
 
         self.set_default_size(500, 500)
-        self.set_title("Colors cube")
+        self.set_title("RGBA")
         self.connect("destroy", Gtk.main_quit)
 
         vbox = Gtk.VBox()
