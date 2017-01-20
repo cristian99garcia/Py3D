@@ -128,23 +128,6 @@ class Window(Gtk.Window):
                 "color": self.colors[constant]
             })
 
-    def make_left_side(self):
-        w = h = d = self.cube_whd
-        plane = py3d.ShapeUtils.make_plane(
-            py3d.Point3D(x=-w, y= h, z=-d),
-            py3d.Point3D(x=-w, y= h, z= d),
-            py3d.Point3D(x=-w, y=-h, z= d),
-            py3d.Point3D(x=-w, y=-h, z=-d)
-        )
-
-        plane.quads = [py3d.QuadFace(3, 2, 1, 0)]
-        self.shapes.append({
-            "shape": plane,
-            "color": py3d.RGBA(0, 0, 1, 1),
-        })
-
-        py3d.ShapeUtils.rebuild_meta(plane)
-
     def buffer_shapes(self):
         self.renderer.transform = self.transform
 
@@ -168,9 +151,6 @@ class Window(Gtk.Window):
 
         self.renderer.draw_buffer()
         self.renderer.empty_buffer()
-
-    def _value_change_cb(self, scale):
-        self.redraw()
 
 
 if __name__ == "__main__":
