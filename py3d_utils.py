@@ -26,7 +26,7 @@ from py3d import Curve
 class Utils:
 
     @classmethod
-    def makeLine(self, p0, p1):
+    def make_line(self, p0, p1):
         path = Path()
         path.points = [
             Point3D(x=p0.x, y=p0.y, z=p0.z),
@@ -38,7 +38,7 @@ class Utils:
         return path
 
     @classmethod
-    def makeCircle(self):
+    def make_circle(self):
         kKappa = 0.66666666666
 
         path = Path()
@@ -57,7 +57,7 @@ class Utils:
         return path
 
     @classmethod
-    def makeSpiral(self, count):
+    def make_spiral(self, count):
         kKappa = 0.66666666666
 
         points = [ ]
@@ -84,7 +84,7 @@ class Utils:
         return path
 
     @classmethod
-    def fitQuadraticToPoints(self, p0, p1, p2):
+    def fit_quadratic_to_points(self, p0, p1, p2):
         return Point3D(
                 x=p1.x + p1.x - 0.5 * (p0.x + p2.x),
                 y=p1.y + p1.y - 0.5 * (p0.y + p2.y),

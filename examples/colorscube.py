@@ -49,8 +49,6 @@ class Window(Gtk.Window):
                             "trans": transform
                         })
 
-                        c = self.cubes[-1]["color"]
-
         self.num_cubes = len(self.cubes)
         self.cur_white = False
 

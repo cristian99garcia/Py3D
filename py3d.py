@@ -1062,18 +1062,18 @@ class ShapeUtils:
         return s
 
     @classmethod
-    def make_octahedron(self):
+    def make_octahedron(self, wdh):
         s = Shape()
         s.vertices = [
-            Point3D(x=-1, y= 0, z= 0),    # 0
-            Point3D(x= 0, y= 0, z= 1),    # 1
-            Point3D(x= 1, y= 0, z= 0),    # 2
-            Point3D(x= 0, y= 0, z=-1),    # 3
-            Point3D(x= 0, y= 1, z= 0),    # 4
-            Point3D(x= 0, y=-1, z= 0)     # 5
+            Point3D(x=-wdh, y= 0,   z= 0  ),    # 0
+            Point3D(x= 0,   y= 0,   z= wdh),    # 1
+            Point3D(x= wdh, y= 0,   z= 0  ),    # 2
+            Point3D(x= 0,   y= 0,   z=-wdh),    # 3
+            Point3D(x= 0,   y= wdh, z= 0  ),    # 4
+            Point3D(x= 0,   y=-wdh, z= 0  )     # 5
         ]
 
-        quads = []
+        quads = [None] * 8
         for i in range(0, 4):
             i2 = (i + 1) & 3
             quads[i * 2]     = QuadFace(4, i, i2, None)
